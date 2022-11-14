@@ -36,6 +36,8 @@
 
 #include <linux/kref.h>
 #include <linux/dma-resv.h>
+#include <linux/list.h>
+#include <linux/mutex.h>
 
 #include <drm/drm_vma_manager.h>
 
@@ -348,6 +350,17 @@ struct drm_gem_object {
 	struct dma_resv _resv;
 
 	/**
+	 * @gpuva:
+	 *
+	 * Provides the list and list mutex of GPU VAs attached to this
+	 * GEM object.
+	 */
+	struct {
+		struct list_head list;
+		struct mutex mutex;
+	} gpuva;
+
+	/**
 	 * @funcs:
 	 *
 	 * Optional GEM object functions. If this is set, it will be used instead of the
@@ -493,5 +506,68 @@ unsigned long drm_gem_lru_scan(struct drm_gem_lru *lru,
 			       bool (*shrink)(struct drm_gem_object *obj));
 
 int drm_gem_evict(struct drm_gem_object *obj);
+
+/**
+ * drm_gem_gpuva_init - initialize the gpuva list of a GEM object
+ * @obj: the &drm_gem_object
+ *
+ * This initializes the &drm_gem_object's &drm_gpuva list and the mutex
+ * protecting it.
+ *
+ * Calling this function is only necessary for drivers intending to support the
+ * &drm_driver_feature DRIVER_GEM_GPUVA.
+ */
+static inline void drm_gem_gpuva_init(struct drm_gem_object *obj)
+{
+	INIT_LIST_HEAD(&obj->gpuva.list);
+	mutex_init(&obj->gpuva.mutex);
+}
+
+/**
+ * drm_gem_gpuva_lock - lock the GEM's gpuva list mutex
+ * @obj: the &drm_gem_object
+ *
+ * This unlocks the mutex protecting the &drm_gem_object's &drm_gpuva list.
+ */
+static inline void drm_gem_gpuva_lock(struct drm_gem_object *obj)
+{
+	mutex_lock(&obj->gpuva.mutex);
+}
+
+/**
+ * drm_gem_gpuva_unlock - unlock the GEM's gpuva list mutex
+ * @obj: the &drm_gem_object
+ *
+ * This unlocks the mutex protecting the &drm_gem_object's &drm_gpuva list.
+ */
+static inline void drm_gem_gpuva_unlock(struct drm_gem_object *obj)
+{
+	mutex_unlock(&obj->gpuva.mutex);
+}
+
+/**
+ * drm_gem_for_each_gpuva - iternator to walk over a list of gpuvas
+ * @entry: &drm_gpuva structure to assign to in each iteration step
+ * @obj: the &drm_gem_object the &drm_gpuvas to walk are associated with
+ *
+ * This iterator walks over all &drm_gpuva structures associated with the
+ * &drm_gpuva_manager.
+ */
+#define drm_gem_for_each_gpuva(entry__, obj__) \
+	list_for_each_entry(entry__, &(obj__)->gpuva.list, gem.entry)
+
+/**
+ * drm_gem_for_each_gpuva_safe - iternator to safely walk over a list of gpuvas
+ * @entry: &drm_gpuva structure to assign to in each iteration step
+ * @next: &next &drm_gpuva to store the next step
+ * @obj: the &drm_gem_object the &drm_gpuvas to walk are associated with
+ *
+ * This iterator walks over all &drm_gpuva structures associated with the
+ * &drm_gem_object. It is implemented with list_for_each_entry_safe(), hence
+ * it is save against removal of elements.
+ */
+#define drm_gem_for_each_gpuva_safe(entry__, next__, obj__) \
+	list_for_each_entry_safe(entry__, next__, &(obj__)->gpuva.list, gem.entry)
+
 
 #endif /* __DRM_GEM_H__ */
