@@ -221,7 +221,7 @@ struct drm_gpuva_prealloc {
 	struct ma_state mas;
 };
 
-struct drm_gpuva_prealloc * drm_gpuva_prealloc_create(void);
+struct drm_gpuva_prealloc * drm_gpuva_prealloc_create(struct drm_gpuva_manager *mgr);
 void drm_gpuva_prealloc_destroy(struct drm_gpuva_prealloc *pa);
 
 /**

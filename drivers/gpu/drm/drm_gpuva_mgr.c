@@ -526,7 +526,7 @@ EXPORT_SYMBOL(drm_gpuva_iter_remove);
  * Returns: the &drm_gpuva_prealloc object on success, NULL on failure
  */
 struct drm_gpuva_prealloc *
-drm_gpuva_prealloc_create(void)
+drm_gpuva_prealloc_create(struct drm_gpuva_manager *mgr)
 {
 	struct drm_gpuva_prealloc *pa;
 
@@ -534,6 +534,7 @@ drm_gpuva_prealloc_create(void)
 	if (!pa)
 		return NULL;
 
+	pa->mas = (struct ma_state) MA_STATE_INIT(&mgr->mtree, 0, 0);
 	if (mas_preallocate(&pa->mas, GFP_KERNEL)) {
 		kfree(pa);
 		return NULL;
