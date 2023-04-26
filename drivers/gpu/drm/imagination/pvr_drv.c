@@ -193,7 +193,7 @@ pvr_ioctl_get_bo_mmap_offset(__always_unused struct drm_device *drm_dev,
 	if (!pvr_obj)
 		return -ENOENT;
 
-	gem_obj = from_pvr_gem_object(pvr_obj);
+	gem_obj = gem_from_pvr_gem(pvr_obj);
 
 	/*
 	 * Allocate a fake offset which can be used in userspace calls to mmap
@@ -1460,7 +1460,8 @@ static struct drm_driver pvr_drm_driver = {
 	 */
 	.prime_fd_to_handle = drm_gem_prime_fd_to_handle,
 	.prime_handle_to_fd = drm_gem_prime_handle_to_fd,
-	.gem_prime_import_sg_table = pvr_gem_prime_import_sg_table,
+	.gem_prime_import_sg_table = drm_gem_shmem_prime_import_sg_table,
+	.gem_create_object = pvr_gem_create_object,
 	/* .gem_prime_import = drm_gem_prime_import, */
 };
 
