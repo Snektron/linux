@@ -200,14 +200,14 @@ struct drm_gpuva_manager {
 	/**
 	 * @ops: &drm_gpuva_fn_ops providing the split/merge steps to drivers
 	 */
-	struct drm_gpuva_fn_ops *ops;
+	const struct drm_gpuva_fn_ops *ops;
 };
 
 void drm_gpuva_manager_init(struct drm_gpuva_manager *mgr,
 			    const char *name,
 			    u64 start_offset, u64 range,
 			    u64 reserve_offset, u64 reserve_range,
-			    struct drm_gpuva_fn_ops *ops);
+			    const struct drm_gpuva_fn_ops *ops);
 void drm_gpuva_manager_destroy(struct drm_gpuva_manager *mgr);
 
 /**

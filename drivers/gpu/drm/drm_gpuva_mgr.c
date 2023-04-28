@@ -430,7 +430,7 @@ drm_gpuva_manager_init(struct drm_gpuva_manager *mgr,
 		       const char *name,
 		       u64 start_offset, u64 range,
 		       u64 reserve_offset, u64 reserve_range,
-		       struct drm_gpuva_fn_ops *ops)
+		       const struct drm_gpuva_fn_ops *ops)
 {
 	mt_init(&mgr->mtree);
 
@@ -974,7 +974,7 @@ drm_gpuva_unmap(drm_gpuva_state_t state)
 EXPORT_SYMBOL(drm_gpuva_unmap);
 
 static int
-op_map_cb(struct drm_gpuva_fn_ops *fn, void *priv,
+op_map_cb(const struct drm_gpuva_fn_ops *fn, void *priv,
 	  u64 addr, u64 range,
 	  struct drm_gem_object *obj, u64 offset)
 {
@@ -990,7 +990,7 @@ op_map_cb(struct drm_gpuva_fn_ops *fn, void *priv,
 }
 
 static int
-op_remap_cb(struct drm_gpuva_fn_ops *fn,
+op_remap_cb(const struct drm_gpuva_fn_ops *fn,
 	    drm_gpuva_state_t state, void *priv,
 	    struct drm_gpuva_op_map *prev,
 	    struct drm_gpuva_op_map *next,
@@ -1009,7 +1009,7 @@ op_remap_cb(struct drm_gpuva_fn_ops *fn,
 }
 
 static int
-op_unmap_cb(struct drm_gpuva_fn_ops *fn,
+op_unmap_cb(const struct drm_gpuva_fn_ops *fn,
 	    drm_gpuva_state_t state, void *priv,
 	    struct drm_gpuva *va, bool merge)
 {
@@ -1024,7 +1024,7 @@ op_unmap_cb(struct drm_gpuva_fn_ops *fn,
 
 static int
 __drm_gpuva_sm_map(struct drm_gpuva_manager *mgr,
-		   struct drm_gpuva_fn_ops *ops, void *priv,
+		   const struct drm_gpuva_fn_ops *ops, void *priv,
 		   u64 req_addr, u64 req_range,
 		   struct drm_gem_object *req_obj, u64 req_offset)
 {
@@ -1172,7 +1172,7 @@ next:
 
 static int
 __drm_gpuva_sm_unmap(struct drm_gpuva_manager *mgr,
-		     struct drm_gpuva_fn_ops *ops, void *priv,
+		     const struct drm_gpuva_fn_ops *ops, void *priv,
 		     u64 req_addr, u64 req_range)
 {
 	DRM_GPUVA_ITER(it, mgr, req_addr);
@@ -1266,7 +1266,7 @@ drm_gpuva_sm_map(struct drm_gpuva_manager *mgr, void *priv,
 		 u64 req_addr, u64 req_range,
 		 struct drm_gem_object *req_obj, u64 req_offset)
 {
-	struct drm_gpuva_fn_ops *ops = mgr->ops;
+	const struct drm_gpuva_fn_ops *ops = mgr->ops;
 
 	if (unlikely(!(ops && ops->sm_step_map &&
 		       ops->sm_step_remap &&
@@ -1310,7 +1310,7 @@ int
 drm_gpuva_sm_unmap(struct drm_gpuva_manager *mgr, void *priv,
 		   u64 req_addr, u64 req_range)
 {
-	struct drm_gpuva_fn_ops *ops = mgr->ops;
+	const struct drm_gpuva_fn_ops *ops = mgr->ops;
 
 	if (unlikely(!(ops && ops->sm_step_remap &&
 		       ops->sm_step_unmap)))
@@ -1324,7 +1324,7 @@ EXPORT_SYMBOL(drm_gpuva_sm_unmap);
 static struct drm_gpuva_op *
 gpuva_op_alloc(struct drm_gpuva_manager *mgr)
 {
-	struct drm_gpuva_fn_ops *fn = mgr->ops;
+	const struct drm_gpuva_fn_ops *fn = mgr->ops;
 	struct drm_gpuva_op *op;
 
 	if (fn && fn->op_alloc)
@@ -1342,7 +1342,7 @@ static void
 gpuva_op_free(struct drm_gpuva_manager *mgr,
 	      struct drm_gpuva_op *op)
 {
-	struct drm_gpuva_fn_ops *fn = mgr->ops;
+	const struct drm_gpuva_fn_ops *fn = mgr->ops;
 
 	if (fn && fn->op_free)
 		fn->op_free(op);
@@ -1413,7 +1413,7 @@ drm_gpuva_sm_step_map(struct drm_gpuva_op *__op, void *priv)
 	return drm_gpuva_sm_step(__op, NULL, priv);
 }
 
-static struct drm_gpuva_fn_ops gpuva_list_ops = {
+static const struct drm_gpuva_fn_ops gpuva_list_ops = {
 	.sm_step_map = drm_gpuva_sm_step_map,
 	.sm_step_remap = drm_gpuva_sm_step,
 	.sm_step_unmap = drm_gpuva_sm_step,
