@@ -1460,7 +1460,7 @@ static struct drm_driver pvr_drm_driver = {
 	 */
 	.prime_fd_to_handle = drm_gem_prime_fd_to_handle,
 	.prime_handle_to_fd = drm_gem_prime_handle_to_fd,
-	.gem_prime_import_sg_table = __pvr_gem_prime_import_sg_table,
+	.gem_prime_import_sg_table = pvr_gem_prime_import_sg_table,
 	/* .gem_prime_import = drm_gem_prime_import, */
 };
 
